@@ -1,0 +1,76 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      GITHUB_PAGES: 'true'
+    steps:
+      - name: Checkout explorer
+        uses: actions/checkout@v4
+
+      - name: Clone twilic-js (local package, same layout as twilic-js CI sibling)
+        run: git clone --depth 1 https://github.com/twilic/twilic-js.git "${{ github.workspace }}/../twilic-js"
+
+      - name: Clone twilic-rust (twilic-js bridge Crate path dependency)
+        run: git clone --depth 1 https://github.com/twilic/twilic-rust.git "${{ github.workspace }}/../twilic-rust"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: v0.13.0
+
+      - name: Install and build twilic-js (WASM + TypeScript)
+        working-directory: ${{ github.workspace }}/../twilic-js
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm build:wasm
+          pnpm build:ts
+
+      - name: Install explorer dependencies
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Build explorer
+        run: pnpm build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
