@@ -13,10 +13,17 @@ import type { TwilicValue } from '@twilic/core/advanced';
 
 import { buildPipeline } from './explore/buildPipeline.js';
 import { BytesInspector } from './explore/BytesInspector.js';
-import { defaultExploreJson, exploreFixtures } from './explore/fixtures.js';
+import { defaultExploreJson, exploreFixtures, userRecordSchema } from './explore/fixtures.js';
 import { encodeForMode, modeLabel } from './explore/encodeForMode.js';
 import { PipelineSteps } from './explore/PipelineSteps.js';
 import type { EncodeMode, PipelineStageId } from './explore/pipelineTypes.js';
+import {
+  formatSchemaText,
+  parseSchemaText,
+  schemaFitsPayload,
+  schemaForPayload,
+  usesBoundSchema,
+} from './explore/schemaInput.js';
 import { parseUserPayloadText } from './userPayloadText.js';
 
 const Pipeline3DView = lazy(async () => {
@@ -38,6 +45,7 @@ function toTwilicValue(raw: unknown): TwilicValue {
 
 export function ExplorePage({ ready }: ExplorePageProps) {
   const [jsonText, setJsonText] = useState(defaultExploreJson);
+  const [schemaText, setSchemaText] = useState(() => formatSchemaText(userRecordSchema));
   const [mode, setMode] = useState<EncodeMode>('batch');
   const [selectedStageId, setSelectedStageId] = useState<PipelineStageId>('input');
   const [inspectorTab, setInspectorTab] = useState<InspectorTab>('steps');
@@ -48,7 +56,8 @@ export function ExplorePage({ ready }: ExplorePageProps) {
     }
     try {
       const input = toTwilicValue(parseUserPayloadText(jsonText));
-      const bytes = encodeForMode(mode, input);
+      const schema = usesBoundSchema(mode) ? parseSchemaText(schemaText) : userRecordSchema;
+      const bytes = encodeForMode(mode, input, schema);
       return { model: buildPipeline(mode, input, bytes), error: null };
     } catch (cause) {
       return {
@@ -56,10 +65,22 @@ export function ExplorePage({ ready }: ExplorePageProps) {
         error: cause instanceof Error ? cause.message : String(cause),
       };
     }
-  }, [jsonText, mode, ready]);
+  }, [jsonText, schemaText, mode, ready]);
 
   const selectedStage =
     model?.stages.find((stage) => stage.id === selectedStageId) ?? model?.stages[0];
+
+  const applySchemaForValue = (value: unknown) => {
+    setSchemaText(formatSchemaText(schemaForPayload(toTwilicValue(value), userRecordSchema)));
+  };
+
+  const inferSchemaFromPayload = () => {
+    try {
+      applySchemaForValue(parseUserPayloadText(jsonText));
+    } catch {
+      // Keep the current schema when the payload is not valid JSON yet.
+    }
+  };
 
   const applyFixture = (fixtureId: string) => {
     const fixture = exploreFixtures.find((item) => item.id === fixtureId);
@@ -67,9 +88,32 @@ export function ExplorePage({ ready }: ExplorePageProps) {
       return;
     }
     setJsonText(JSON.stringify(fixture.value, null, 2));
+    setSchemaText(
+      formatSchemaText(fixture.schema ?? schemaForPayload(fixture.value, userRecordSchema)),
+    );
     setMode(fixture.defaultMode);
     setSelectedStageId('input');
     setInspectorTab('steps');
+  };
+
+  const handleModeChange = (nextMode: EncodeMode) => {
+    setMode(nextMode);
+    if (!usesBoundSchema(nextMode)) {
+      return;
+    }
+    try {
+      const input = toTwilicValue(parseUserPayloadText(jsonText));
+      try {
+        const current = parseSchemaText(schemaText);
+        if (!schemaFitsPayload(current, input)) {
+          applySchemaForValue(input);
+        }
+      } catch {
+        applySchemaForValue(input);
+      }
+    } catch {
+      // Keep the current schema when the payload is not valid JSON yet.
+    }
   };
 
   const handleSelectStage = (stageId: PipelineStageId) => {
@@ -90,13 +134,26 @@ export function ExplorePage({ ready }: ExplorePageProps) {
             />
           </div>
         ) : exploreError ? (
-          <div className="bg-kumo-base flex h-full items-center justify-center p-6">
+          <div className="bg-kumo-base flex h-full flex-col items-center justify-center gap-3 p-6">
             <Banner
               icon={<WarningCircleIcon weight="fill" />}
               variant="error"
               title="Could not explore payload"
               description={exploreError}
             />
+            {usesBoundSchema(mode) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  inferSchemaFromPayload();
+                  setInspectorTab('input');
+                }}
+              >
+                Infer schema from payload
+              </Button>
+            )}
           </div>
         ) : (
           <Suspense
@@ -179,7 +236,7 @@ export function ExplorePage({ ready }: ExplorePageProps) {
                     listClassName="w-full"
                     value={mode}
                     onValueChange={(value) => {
-                      setMode(value as EncodeMode);
+                      handleModeChange(value as EncodeMode);
                     }}
                     tabs={encodeModes.map((item) => ({
                       value: item,
@@ -189,6 +246,34 @@ export function ExplorePage({ ready }: ExplorePageProps) {
                   />
                 </Field>
               </LayerCard>
+              {usesBoundSchema(mode) && (
+                <LayerCard className="px-5 py-4">
+                  <Field
+                    label="Schema"
+                    description="JSON schema for Schema and Bound. Accepts logicalType or the schema-example.json field shape."
+                  >
+                    <div className="flex flex-col gap-2">
+                      <InputArea
+                        value={schemaText}
+                        onChange={(event) => {
+                          setSchemaText(event.target.value);
+                        }}
+                        rows={10}
+                        className="font-mono"
+                        aria-label="Schema JSON"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        onClick={inferSchemaFromPayload}
+                      >
+                        Infer from payload
+                      </Button>
+                    </div>
+                  </Field>
+                </LayerCard>
+              )}
             </div>
           )}
 
@@ -196,11 +281,26 @@ export function ExplorePage({ ready }: ExplorePageProps) {
             <div className="flex flex-col gap-3">
               {!ready && <Text variant="secondary">Waiting for WASM…</Text>}
               {ready && exploreError && (
-                <Banner
-                  variant="error"
-                  title="Could not explore payload"
-                  description={exploreError}
-                />
+                <div className="flex flex-col gap-2">
+                  <Banner
+                    variant="error"
+                    title="Could not explore payload"
+                    description={exploreError}
+                  />
+                  {usesBoundSchema(mode) && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        inferSchemaFromPayload();
+                        setInspectorTab('input');
+                      }}
+                    >
+                      Infer schema from payload
+                    </Button>
+                  )}
+                </div>
               )}
               {ready && model && (
                 <PipelineSteps

@@ -10,6 +10,7 @@ import {
 import type { EncodeMode } from './pipelineTypes.js';
 import { normalizeRecords } from './batchHeuristics.js';
 import { userRecordSchema } from './fixtures.js';
+import { recordsForSchema } from './schemaInput.js';
 
 export function encodeForMode(
   mode: EncodeMode,
@@ -27,9 +28,9 @@ export function encodeForMode(
     case 'batch':
       return encodeBatch(records);
     case 'schema_batch':
-      return encodeBatchWithSchema(schema, records);
+      return encodeBatchWithSchema(schema, recordsForSchema(value, schema));
     case 'bound_stream':
-      return encodeBoundStream(schema, records);
+      return encodeBoundStream(schema, recordsForSchema(value, schema));
     default:
       return encode(records[0]);
   }

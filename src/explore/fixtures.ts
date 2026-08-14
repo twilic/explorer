@@ -50,6 +50,7 @@ export interface ExploreFixture {
   description: string;
   defaultMode: 'dynamic' | 'batch' | 'schema_batch' | 'bound_stream';
   value: TwilicValue;
+  schema?: Schema;
 }
 
 export const exploreFixtures: ExploreFixture[] = [
@@ -84,6 +85,7 @@ export const exploreFixtures: ExploreFixture[] = [
     description: 'Same records as schema-example.json — try SCHEMA_BATCH or BOUND_STREAM.',
     defaultMode: 'schema_batch',
     value: userRecordExampleRecords,
+    schema: userRecordSchema,
   },
 ];
 

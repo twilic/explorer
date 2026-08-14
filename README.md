@@ -32,6 +32,7 @@ This project always depends on a **local sibling** [`twilic-js`](https://github.
 - **Demo fixtures** — repeated strings, single user shape, small role batch, and [schema-example.json](https://github.com/twilic/twilic/blob/main/examples/schema-example.json) style `UserRecordV1` records (×3).
 - **Custom JSON** — paste or edit a root object `{…}`, array `[…]`, or JSONL; the pipeline rebuilds when the payload is valid.
 - **Encoding modes** — Dynamic, Batch, `SCHEMA_BATCH`, and `BOUND_STREAM` via segmented controls.
+- **Bound schema** — Schema and Bound modes use an editable JSON schema. Demos infer a matching schema; scalar arrays are wrapped as a single `value` field. You can also paste `schema-example.json` field names (`type`, `enum`, `range`).
 - **Step inspector** — expandable step list with inline detail (shapes, string table, batch heuristics, hex preview).
 - **Bytes view** — stage-highlighted hex cells plus a full hex dump with ASCII.
 - **3D pipeline** — Three.js byte field; hover shows offset/label, click selects the owning stage.
