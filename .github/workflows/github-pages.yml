@@ -33,9 +33,11 @@ jobs:
         run: git clone --depth 1 https://github.com/twilic/twilic-rust.git "${{ github.workspace }}/../twilic-rust"
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
         with:
-          version: 10.18.1
+          version: 11.25.0
+          cache: true
+          install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -53,14 +55,12 @@ jobs:
       - name: Install and build twilic-js (WASM + TypeScript)
         working-directory: ${{ github.workspace }}/../twilic-js
         run: |
-          corepack enable
           pnpm install --frozen-lockfile
           pnpm build:wasm
           pnpm build:ts
 
       - name: Install explorer dependencies
         run: |
-          corepack enable
           pnpm install --frozen-lockfile
 
       - name: Build explorer

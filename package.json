@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "Interactive visual explorer for understanding how Twilic transforms and encodes structured data.",
   "type": "module",
-  "packageManager": "pnpm@10.18.1",
+  "packageManager": "pnpm@11.25.0",
   "engines": {
     "node": ">=24"
   },
