@@ -9,7 +9,7 @@ lerna-debug.log*
 
 node_modules
 
-# Wasm-pack output copied from ../twilic-js on dev/build (see vite.config.ts)
+# Wasm-pack output copied from ../twilic/runtimes/javascript on dev/build (see vite.config.ts)
 wasm/pkg/
 
 # Legacy path from an earlier approach; do not use — use `wasm/pkg` at repo root instead

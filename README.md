@@ -25,7 +25,7 @@ Click any 3D node or step to drill down. Byte ranges for the selected step are h
 
 Encoding uses `@twilic/core/advanced` (WASM). Intermediate stage tables are reconstructed from the wire format and input JSON; exact Rust codec-explain APIs are not exposed by the SDK yet — batch codec labels are marked approximate.
 
-This project always depends on a **local sibling** [`twilic-js`](https://github.com/twilic/twilic-js) checkout via `file:../twilic-js` (not the published npm package), so the explorer tracks your latest TypeScript and WASM build.
+This project always depends on a **local sibling** [`@twilic/core`](https://github.com/twilic/twilic/tree/main/runtimes/javascript) checkout via `file:../twilic/runtimes/javascript` (not the published npm package), so the explorer tracks your latest TypeScript and WASM build.
 
 ## Features
 
@@ -44,38 +44,37 @@ This project always depends on a **local sibling** [`twilic-js`](https://github.
 | -------- | -------------------------------------------------------------------------------------- |
 | UI       | [@cloudflare/kumo](https://kumo-ui.com/) + [Tailwind CSS v4](https://tailwindcss.com/) |
 | App      | React 19, TypeScript, Vite 8 (Rolldown), Three.js                                      |
-| Encoding | Local `twilic-js` (WASM)                                                               |
+| Encoding | Local `@twilic/core` (WASM)                                                            |
 
 ## Prerequisites
 
 - Node.js **≥ 24**
 - [pnpm](https://pnpm.io/) **10.18.1** (see `packageManager` in `package.json`)
-- Cloned next to `twilic-js`:
+- Cloned next to the Twilic monorepo:
 
 ```text
 your-workspace/
-  twilic-js/     # https://github.com/twilic/twilic-js
-  twilic-rust/   # required when building twilic-js (bridge path dependency)
-  explorer/      # this repo
+  twilic/      # https://github.com/twilic/twilic
+  explorer/    # this repo
 ```
 
-Build WASM and TypeScript in `twilic-js` before running the explorer:
+Build WASM and TypeScript in `twilic/runtimes/javascript` before running the explorer:
 
 ```bash
-cd ../twilic-js
+cd ../twilic/runtimes/javascript
 pnpm install
 pnpm build:wasm
 pnpm build:ts
 ```
 
-For a full `twilic-js` setup from a clean tree, follow that repository’s README (Rust, `wasm-pack`).
+For a full `@twilic/core` setup from a clean tree, follow [`runtimes/javascript/README.md`](https://github.com/twilic/twilic/blob/main/runtimes/javascript/README.md) (Rust, `wasm-pack`).
 
 ## Commands
 
 ```bash
 cd explorer
 pnpm install
-pnpm sync-wasm     # mirrors ../twilic-js/wasm/pkg → wasm/pkg (also runs before dev/build)
+pnpm sync-wasm     # mirrors ../twilic/runtimes/javascript/wasm/pkg → wasm/pkg (also runs before dev/build)
 pnpm dev           # http://localhost:5173
 pnpm build         # production build (bundled WASM in dist/assets/)
 pnpm preview       # preview the production build locally
@@ -93,7 +92,7 @@ Project sites are served from `https://<user>.github.io/<repo>/`. Vite’s `base
 1. In the repository **Settings → Pages**, set **Source** to **GitHub Actions**.
 2. Push to `main`, or run **Actions → Deploy GitHub Pages** manually.
 
-The workflow (`.github/workflows/github-pages.yml`) checks out this repo, clones [`twilic/twilic-js`](https://github.com/twilic/twilic-js) and [`twilic/twilic-rust`](https://github.com/twilic/twilic-rust) beside the workspace (same layout as twilic-js CI), builds **WASM + TypeScript** there, then installs and builds this app. Deployed Pages therefore track the latest **`twilic-js` default branch**, not the npm registry.
+The workflow (`.github/workflows/github-pages.yml`) checks out this repo, clones [`twilic/twilic`](https://github.com/twilic/twilic) beside the workspace, builds **WASM + TypeScript** in `runtimes/javascript`, then installs and builds this app. Deployed Pages therefore track the latest **`twilic` default branch**, not the npm registry.
 
 ## Limitations
 
@@ -103,7 +102,7 @@ The workflow (`.github/workflows/github-pages.yml`) checks out this repo, clones
 
 ## Implementation notes
 
-- `scripts/sync-twilic-wasm.mjs` (via **`pnpm sync-wasm`**, **`predev`**, **`prebuild`**, and a matching Vite **`buildStart`** hook) copies `../twilic-js/wasm/pkg` into **`wasm/pkg/`** (gitignored) so wasm imports resolve inside this workspace.
+- `scripts/sync-twilic-wasm.mjs` (via **`pnpm sync-wasm`**, **`predev`**, **`prebuild`**, and a matching Vite **`buildStart`** hook) copies `../twilic/runtimes/javascript/wasm/pkg` into **`wasm/pkg/`** (gitignored) so wasm imports resolve inside this workspace.
 - **`vite.config.ts`** sets **`assetsInclude`** for `*.wasm` so Rolldown can bundle wasm-pack’s `import '*.wasm'`. Without bundling, serving raw bindings from `/public` often breaks under **`pnpm preview`** (MIME / module errors in Chromium).
 - **`build.rolldownOptions.output.codeSplitting`** splits vendor chunks (React, Kumo, Three.js, Twilic) to keep the main bundle under Vite’s size warning threshold.
 - **`src/shims/`** substitutes browser-safe backends so the client bundle excludes Node-only N-API loaders and `.node` binaries.

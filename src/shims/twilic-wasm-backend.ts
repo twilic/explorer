@@ -2,7 +2,7 @@ import type {
   RuntimeBackend,
   RuntimeSessionEncoder,
   TransportValueObj,
-} from '../../../twilic-js/dist/runtime/types.js';
+} from '../../../twilic/runtimes/javascript/dist/runtime/types.js';
 
 import wasmUrl from '../../wasm/pkg/twilic_wasm_bg.wasm?url';
 import * as wasmGlue from '@twilic/wasm-glue';
@@ -71,7 +71,7 @@ function buildGlueImports(wasmBytes: ArrayBuffer): WebAssembly.ModuleImports {
     const fn = (wasmGlue as Record<string, unknown>)[imp.name];
     if (typeof fn !== 'function') {
       throw new Error(
-        `Missing wasm-bindgen glue export "${imp.name}". Run pnpm build:wasm in twilic-js, then pnpm build here.`,
+        `Missing wasm-bindgen glue export "${imp.name}". Run pnpm build:wasm in twilic/runtimes/javascript, then pnpm build here.`,
       );
     }
     glue[imp.name] = fn as WebAssembly.ImportValue;

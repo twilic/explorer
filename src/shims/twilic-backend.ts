@@ -1,9 +1,12 @@
 /**
  * Browser build of `twilic` backend bootstrap: WASM only, no N-API preloading /
- * bundled `.node` assets (see twilic-js `dist/backend.js`).
+ * bundled `.node` assets (see `@twilic/core` `dist/backend.js`).
  */
-import type { InitOptions } from '../../../twilic-js/dist/types.js';
-import type { RuntimeBackend, RuntimeKind } from '../../../twilic-js/dist/runtime/types.js';
+import type { InitOptions } from '../../../twilic/runtimes/javascript/dist/types.js';
+import type {
+  RuntimeBackend,
+  RuntimeKind,
+} from '../../../twilic/runtimes/javascript/dist/runtime/types.js';
 
 import { loadNodeBackend } from './twilic-node-backend.js';
 import { loadWasmBackend } from './twilic-wasm-backend.js';

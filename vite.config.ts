@@ -7,13 +7,13 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
 const explorerDir = path.dirname(fileURLToPath(import.meta.url));
-const twilicJsRoot = path.resolve(explorerDir, '..', 'twilic-js');
+const twilicJsRoot = path.resolve(explorerDir, '..', 'twilic', 'runtimes', 'javascript');
 const wasmPkgSource = path.join(twilicJsRoot, 'wasm', 'pkg');
 
 /**
  * Copies built wasm-bindgen output **into this repo** so Vite/Rolldown can resolve
- * `import '*.wasm'` (sibling-package paths under `../twilic-js` fail during build).
- * Not committed (see `.gitignore`). Still uses your local twilic-js build output.
+ * `import '*.wasm'` (sibling-package paths under `../twilic/runtimes/javascript` fail during build).
+ * Not committed (see `.gitignore`). Still uses your local @twilic/core build output.
  */
 function syncTwilicWasmIntoWorkspace(): Plugin {
   const wasmPkgDest = path.join(explorerDir, 'wasm', 'pkg');
@@ -23,7 +23,7 @@ function syncTwilicWasmIntoWorkspace(): Plugin {
     buildStart() {
       if (!fs.existsSync(wasmPkgSource)) {
         throw new Error(
-          `[explorer] Missing ${wasmPkgSource}. Run pnpm build:wasm in twilic-js (see README).`,
+          `[explorer] Missing ${wasmPkgSource}. Run pnpm build:wasm in twilic/runtimes/javascript (see README).`,
         );
       }
       fs.mkdirSync(wasmPkgDest, { recursive: true });
@@ -49,7 +49,7 @@ function isTwilicCorePath(filePath: string | undefined): boolean {
     return false;
   }
   const norm = filePath.replaceAll('\\', '/');
-  return norm.includes('/@twilic/core/') || norm.includes('/twilic-js/');
+  return norm.includes('/@twilic/core/') || norm.includes('/runtimes/javascript/');
 }
 
 /** Force browser shims so we do not bundle Node-only N-API loaders or `.node` binaries. */

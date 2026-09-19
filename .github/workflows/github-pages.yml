@@ -26,11 +26,8 @@ jobs:
       - name: Checkout explorer
         uses: actions/checkout@v4
 
-      - name: Clone twilic-js (local package, same layout as twilic-js CI sibling)
-        run: git clone --depth 1 https://github.com/twilic/twilic-js.git "${{ github.workspace }}/../twilic-js"
-
-      - name: Clone twilic-rust (twilic-js bridge Crate path dependency)
-        run: git clone --depth 1 https://github.com/twilic/twilic-rust.git "${{ github.workspace }}/../twilic-rust"
+      - name: Clone twilic monorepo (local @twilic/core sibling)
+        run: git clone --depth 1 https://github.com/twilic/twilic.git "${{ github.workspace }}/../twilic"
 
       - name: Setup pnpm
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
@@ -52,8 +49,8 @@ jobs:
         with:
           version: v0.13.0
 
-      - name: Install and build twilic-js (WASM + TypeScript)
-        working-directory: ${{ github.workspace }}/../twilic-js
+      - name: Install and build @twilic/core (WASM + TypeScript)
+        working-directory: ${{ github.workspace }}/../twilic/runtimes/javascript
         run: |
           pnpm install --frozen-lockfile
           pnpm build:wasm

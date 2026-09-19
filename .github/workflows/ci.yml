@@ -21,8 +21,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Clone twilic-js (local package dependency)
-        run: git clone --depth 1 https://github.com/twilic/twilic-js.git "${{ github.workspace }}/../twilic-js"
+      - name: Clone twilic monorepo (local package dependency)
+        run: git clone --depth 1 https://github.com/twilic/twilic.git "${{ github.workspace }}/../twilic"
 
       - name: Setup pnpm
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
@@ -51,8 +51,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Clone twilic-js (local package dependency)
-        run: git clone --depth 1 https://github.com/twilic/twilic-js.git "${{ github.workspace }}/../twilic-js"
+      - name: Clone twilic monorepo (local package dependency)
+        run: git clone --depth 1 https://github.com/twilic/twilic.git "${{ github.workspace }}/../twilic"
 
       - name: Setup pnpm
         uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
