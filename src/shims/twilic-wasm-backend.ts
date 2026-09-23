@@ -1,5 +1,6 @@
 import type {
   RuntimeBackend,
+  RuntimeSessionDecoder,
   RuntimeSessionEncoder,
   TransportValueObj,
 } from '../../../twilic/runtimes/javascript/dist/runtime/types.js';
@@ -8,6 +9,7 @@ import wasmUrl from '../../wasm/pkg/twilic_wasm_bg.wasm?url';
 import * as wasmGlue from '@twilic/wasm-glue';
 import {
   __wbg_set_wasm,
+  createSessionDecoder as wasmCreateSessionDecoder,
   createSessionEncoder as wasmCreateSessionEncoder,
   decodeToTransportJson,
   encodeBatchWithSchemaTransportJson,
@@ -15,6 +17,7 @@ import {
   encodeBoundStreamTransportJson,
   encodeTransportJson,
   encodeWithSchemaTransportJson,
+  type SessionDecoder as WasmSessionDecoder,
   type SessionEncoder as WasmSessionEncoder,
 } from '@twilic/wasm-glue';
 
@@ -55,6 +58,10 @@ export async function loadWasmBackend(wasmInput?: unknown): Promise<RuntimeBacke
     createSessionEncoder: (optionsJson) => {
       const inner = wasmCreateSessionEncoder(optionsJson);
       return wrapSessionEncoder(inner);
+    },
+    createSessionDecoder: (optionsJson) => {
+      const inner = wasmCreateSessionDecoder(optionsJson);
+      return wrapSessionDecoder(inner);
     },
   };
 }
@@ -111,6 +118,14 @@ function wrapSessionEncoder(inner: WasmSessionEncoder): RuntimeSessionEncoder {
     encodeBatchCompactJson: (json) => inner.encodeBatchTransportJson(json),
     encodePatchCompactJson: (json) => inner.encodePatchTransportJson(json),
     encodeMicroBatchCompactJson: (json) => inner.encodeMicroBatchTransportJson(json),
+    reset: () => inner.reset(),
+  };
+}
+
+function wrapSessionDecoder(inner: WasmSessionDecoder): RuntimeSessionDecoder {
+  return {
+    decodeToTransportJson: (bytes) => inner.decodeToTransportJson(bytes),
+    decodeToCompactJson: (bytes) => inner.decodeToCompactJson(bytes),
     reset: () => inner.reset(),
   };
 }

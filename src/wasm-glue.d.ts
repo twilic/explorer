@@ -11,8 +11,16 @@ declare module '@twilic/wasm-glue' {
     reset(): void;
   }
 
+  export class SessionDecoder {
+    free(): void;
+    decodeToTransportJson(bytes: Uint8Array): string;
+    decodeToCompactJson(bytes: Uint8Array): string;
+    reset(): void;
+  }
+
   export function __wbg_set_wasm(val: WebAssembly.Exports): void;
   export function createSessionEncoder(options_json?: string | null): SessionEncoder;
+  export function createSessionDecoder(options_json?: string | null): SessionDecoder;
   export function decodeToTransportJson(bytes: Uint8Array): string;
   export function encodeBatchWithSchemaTransportJson(
     schema_json: string,
