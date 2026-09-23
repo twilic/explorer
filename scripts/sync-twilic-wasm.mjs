@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Copies ../twilic/runtimes/javascript/wasm/pkg into explorer/wasm/pkg so TypeScript + Vite can resolve
- * `import "*.wasm"` from inside this workspace (runs before `tsc -b` during `pnpm build`).
+ * `import "*.wasm"` from inside this workspace (runs before `tsc -b` during `bun run build`).
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +13,7 @@ const dest = path.join(explorerDir, 'wasm', 'pkg');
 
 if (!fs.existsSync(source)) {
   console.error(`[sync-twilic-wasm] Missing ${source}`);
-  console.error(`  Build WASM in twilic/runtimes/javascript first: pnpm build:wasm`);
+  console.error(`  Build WASM in twilic/runtimes/javascript first: bun run build:wasm`);
   process.exit(1);
 }
 

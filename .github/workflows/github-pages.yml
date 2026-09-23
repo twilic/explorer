@@ -29,12 +29,10 @@ jobs:
       - name: Clone twilic monorepo (local @twilic/core sibling)
         run: git clone --depth 1 https://github.com/twilic/twilic.git "${{ github.workspace }}/../twilic"
 
-      - name: Setup pnpm
-        uses: pnpm/setup@703c52620218391530e48b9e8870d5c0082e1b9b # v2.1.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          version: 11.25.0
-          cache: true
-          install: false
+          bun-version: 1.4.2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,16 +50,16 @@ jobs:
       - name: Install and build @twilic/core (WASM + TypeScript)
         working-directory: ${{ github.workspace }}/../twilic/runtimes/javascript
         run: |
-          pnpm install --frozen-lockfile
-          pnpm build:wasm
-          pnpm build:ts
+          bun ci
+          bun run build:wasm
+          bun run build:ts
 
       - name: Install explorer dependencies
         run: |
-          pnpm install --frozen-lockfile
+          bun ci
 
       - name: Build explorer
-        run: pnpm build
+        run: bun run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

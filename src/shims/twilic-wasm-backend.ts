@@ -24,7 +24,7 @@ const WASM_GLUE_MODULE = './twilic_wasm_bg.js';
 /**
  * WASM entry is duplicated under `explorer/wasm/pkg` by Vite (see `vite.config.ts`) so
  * `import '*.wasm'` is resolved inside this project—required for Rolldown; **do not** load that
- * tree raw from `/public` (MIME / module graph breaks under `pnpm preview`).
+ * tree raw from `/public` (MIME / module graph breaks under `bun run preview`).
  *
  * Do not use `twilic_wasm.js` (Rolldown passes a URL to `__wbg_set_wasm`) or bare `?init`
  * (Vite omits wasm-bindgen JS imports). Instantiate with the glue namespace, then
@@ -71,7 +71,7 @@ function buildGlueImports(wasmBytes: ArrayBuffer): WebAssembly.ModuleImports {
     const fn = (wasmGlue as Record<string, unknown>)[imp.name];
     if (typeof fn !== 'function') {
       throw new Error(
-        `Missing wasm-bindgen glue export "${imp.name}". Run pnpm build:wasm in twilic/runtimes/javascript, then pnpm build here.`,
+        `Missing wasm-bindgen glue export "${imp.name}". Run bun run build:wasm in twilic/runtimes/javascript, then bun run build here.`,
       );
     }
     glue[imp.name] = fn as WebAssembly.ImportValue;

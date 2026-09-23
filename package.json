@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "description": "Interactive visual explorer for understanding how Twilic transforms and encodes structured data.",
   "type": "module",
-  "packageManager": "pnpm@11.25.0",
+  "packageManager": "bun@1.4.2",
   "engines": {
     "node": ">=24"
   },
   "scripts": {
     "sync-wasm": "node scripts/sync-twilic-wasm.mjs",
-    "predev": "pnpm sync-wasm",
-    "prebuild": "pnpm sync-wasm",
+    "predev": "bun run sync-wasm",
+    "prebuild": "bun run sync-wasm",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

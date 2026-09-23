@@ -23,7 +23,7 @@ function syncTwilicWasmIntoWorkspace(): Plugin {
     buildStart() {
       if (!fs.existsSync(wasmPkgSource)) {
         throw new Error(
-          `[explorer] Missing ${wasmPkgSource}. Run pnpm build:wasm in twilic/runtimes/javascript (see README).`,
+          `[explorer] Missing ${wasmPkgSource}. Run bun run build:wasm in twilic/runtimes/javascript (see README).`,
         );
       }
       fs.mkdirSync(wasmPkgDest, { recursive: true });
